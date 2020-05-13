@@ -1,13 +1,13 @@
 import { GenericControllerMethod } from 'common-core/Controller'
 import { FunctionResultStatus } from 'common-core/FunctionResult'
-import { EDIParseRequestInfo } from './Models/index'
-import { EDIParseScriptRunner } from 'common-core/ScriptRunners/EDIParseScriptRunner'
+import { EDIGenerateRequestInfo } from './Models/index'
+import { EDIGenerateScriptRunner } from 'common-core/ScriptRunners/EDIGenerateScriptRunner'
 
-export const EDIParse = GenericControllerMethod({
-  name: 'EDIParse',
-  inputModel: EDIParseRequestInfo,
+export const EDIGenerate = GenericControllerMethod({
+  name: 'EDIGenerate',
+  inputModel: EDIGenerateRequestInfo,
   processor: async function (requestInfo, ret, config) {
-    const runner = new EDIParseScriptRunner(requestInfo.Script, requestInfo.EDI)
+    const runner = new EDIGenerateScriptRunner(requestInfo.Script, requestInfo.Data)
 
     if (runner.process() === true) {
       ret.AddMessages(runner.messages)
@@ -20,4 +20,4 @@ export const EDIParse = GenericControllerMethod({
   }
 })
 
-export default EDIParse
+export default EDIGenerate

@@ -3,7 +3,7 @@ import CodeEditor from 'common-controls/Core/CodeEditorWithToolBar'
 import SaveIcon from '@material-ui/icons/Save'
 import { BuildMessageBusChannels, SendBusMessage } from 'common-tools/MessageBusHelper'
 
-export const DataEditorChannels = BuildMessageBusChannels('DataEditor', ['DataUpdate'])
+export const DataEditorChannels = BuildMessageBusChannels('ParseDataEditor', ['DataUpdate'])
 
 export class DataEditor extends React.Component {
     onSave = () => {
@@ -18,6 +18,6 @@ export class DataEditor extends React.Component {
 
   render () {
     const { onChange, splitSize, value } = this.props
-    return <CodeEditor title='Data' onChange={onChange} value={value} splitSize={splitSize} actions={this.renderActions()} />
+    return <CodeEditor title='EDI Data' onChange={onChange} value={value} splitSize={splitSize} actions={this.renderActions()} />
   }
 }

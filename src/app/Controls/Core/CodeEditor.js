@@ -63,3 +63,5 @@ export class CodeEditor extends React.Component {
     </div>
   }
 }
+
+export default CodeEditor

@@ -3,12 +3,12 @@ import CodeEditor from 'common-controls/Core/CodeEditorWithToolBar'
 import SaveIcon from '@material-ui/icons/Save'
 import { BuildMessageBusChannels, SendBusMessage } from 'common-tools/MessageBusHelper'
 
-export const TemplateEditorChannels = BuildMessageBusChannels('ParseTemplateEditor', ['TemplateUpdate'])
+export const DataEditorChannels = BuildMessageBusChannels('GenerateDataEditor', ['DataUpdate'])
 
-export class TemplateEditor extends React.Component {
-  onSave = () => {
-    SendBusMessage(TemplateEditorChannels.NewTemplateUpdate())
-  }
+export class DataEditor extends React.Component {
+    onSave = () => {
+      SendBusMessage(DataEditorChannels.NewDataUpdate())
+    }
 
   renderActions = () => {
     return [
@@ -18,6 +18,6 @@ export class TemplateEditor extends React.Component {
 
   render () {
     const { onChange, splitSize, value } = this.props
-    return <CodeEditor title='Script' onChange={onChange} value={value} mode='javascript' splitSize={splitSize} actions={this.renderActions()} />
+    return <CodeEditor title='JSON Data' onChange={onChange} mode='json' value={value} splitSize={splitSize} actions={this.renderActions()} />
   }
 }

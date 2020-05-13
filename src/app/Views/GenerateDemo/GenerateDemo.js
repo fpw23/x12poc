@@ -7,10 +7,8 @@ import Typography from '@material-ui/core/Typography'
 import SplitPane from 'react-split-pane'
 import { WithMessageBus, WithQuery } from 'common-tools/index'
 import { OutputViewer } from './OutputViewer'
-import ReactJson from 'react-json-view'
 import { TemplateEditor, TemplateEditorChannels } from './TemplateEditor'
 import { DataEditor, DataEditorChannels } from './DataEditor'
-import { withSnackbar } from 'notistack'
 
 const styles = (theme) => ({
   root: {
@@ -44,7 +42,7 @@ const styles = (theme) => ({
   }
 })
 
-export class ParseDemoPlain extends React.Component {
+export class GenerateDemoPlain extends React.Component {
   constructor (props) {
     super(props)
 
@@ -53,7 +51,7 @@ export class ParseDemoPlain extends React.Component {
       Data: '',
       VSplit: 0,
       HSplit: 0,
-      Output: {}
+      Output: ''
     }
   }
 
@@ -68,28 +66,25 @@ export class ParseDemoPlain extends React.Component {
   }
 
   updateOuptputPreview = () => {
-    const { ParseEDI, enqueueSnackbar, displayRuleMessages } = this.props
+    const { GenearteEDI } = this.props
     const { Data, Template } = this.state
-
-    ParseEDI({ EDI: Data, Script: Template }).then(({ data }) => {
-      try {
-        this.setState({
-          Output: data
-        })
-        enqueueSnackbar('Script Parsed', {
-          variant: 'success'
-        })
-      } catch (jerr) {
-        this.setState({
-          Output: {
-            Error: jerr.message
-          }
-        })
-        enqueueSnackbar('Script Parse Failed', {
-          variant: 'error'
-        })
-      }
-    }).catch(displayRuleMessages)
+    try {
+      GenearteEDI({ Script: Template, Data: JSON.parse(Data) }).then(({ data }) => {
+        try {
+          this.setState({
+            Output: data
+          })
+        } catch (jerr) {
+          this.setState({
+            Output: jerr.message
+          })
+        }
+      })
+    } catch (err) {
+      this.setState({
+        Output: err.message
+      })
+    }
   }
 
   onSplitResize = (name, newSize) => {
@@ -108,14 +103,14 @@ export class ParseDemoPlain extends React.Component {
           <AppBar position='relative'>
             <Toolbar>
               <Typography variant="h6" className={classes.title}>
-                (X12POC) React/Node EDI Parser
+                (X12POC) React/Node EDI Generator
               </Typography>
             </Toolbar>
           </AppBar>
         </div>
         <div className={classes.body}>
           <SplitPane split="vertical" onDragFinished={this.onSplitResize.bind(this, 'V')} minSize={'100px'} defaultSize={'50%'}>
-            <ReactJson src={Output}/>
+            <OutputViewer edi={Output} />
             <SplitPane split="horizontal" onDragFinished={this.onSplitResize.bind(this, 'H')} minSize={'100px'} defaultSize={'50%'}>
               <TemplateEditor value={Template} splitSize={VSplit + HSplit} onChange={(val) => { this.setState({ Template: val }) }} />
               <DataEditor value={Data} splitSize={VSplit + HSplit} onChange={(val) => { this.setState({ Data: val }) }} />
@@ -127,15 +122,14 @@ export class ParseDemoPlain extends React.Component {
   }
 }
 
-export const ParseDemo = compose(
-  withSnackbar,
+export const GenerateDemo = compose(
   withStyles(styles),
   WithQuery({
-    stateKey: 'ParseDemo',
+    stateKey: 'GenerateDemo',
     actions: [
       {
-        url: '/Services/EDI/Parse',
-        prop: 'ParseEDI'
+        url: '/Services/EDI/Generate',
+        prop: 'GenearteEDI'
       }
     ]
   }),
@@ -145,6 +139,6 @@ export const ParseDemo = compose(
       TemplateEditorChannels.TemplateUpdate
     ]
   })
-)(ParseDemoPlain)
+)(GenerateDemoPlain)
 
-export default ParseDemoPlain
+export default GenerateDemoPlain

@@ -3,7 +3,7 @@ import CodeEditor from 'common-controls/Core/CodeEditorWithToolBar'
 import SaveIcon from '@material-ui/icons/Save'
 import { BuildMessageBusChannels, SendBusMessage } from 'common-tools/MessageBusHelper'
 
-export const TemplateEditorChannels = BuildMessageBusChannels('ParseTemplateEditor', ['TemplateUpdate'])
+export const TemplateEditorChannels = BuildMessageBusChannels('GenerateTemplateEditor', ['TemplateUpdate'])
 
 export class TemplateEditor extends React.Component {
   onSave = () => {

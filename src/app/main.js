@@ -6,10 +6,12 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { IndexRoute, UnknownRoute } from 'common-controls/Core/index'
 import { compose, WithRedux, ah } from 'common-data/datahelper'
 import { Router, globalHistory } from '@reach/router'
+import { SnackbarProvider } from 'notistack'
 
 import './SplitPane.css'
 
 import { ParseDemo } from 'common-views/ParseDemo/ParseDemo'
+import { GenerateDemo } from 'common-views/GenerateDemo/GenerateDemo'
 
 class MainPlain extends React.Component {
     onRouteChanged = (history) => {
@@ -31,6 +33,7 @@ class MainPlain extends React.Component {
         <Router>
           <IndexRoute path='/' to='Demo/Parse' />
           <ParseDemo path="Demo/Parse" />
+          <GenerateDemo path="Demo/Generate" />
           <UnknownRoute default />
         </Router>
       )
@@ -47,6 +50,11 @@ const Main = compose(
 
 ReactDOM.render(
   <ReduxProvider store={store}>
-    <Main />
+    <SnackbarProvider maxSnack={3} anchorOrigin={{
+      vertical: 'bottom',
+      horizontal: 'left'
+    }}>
+      <Main />
+    </SnackbarProvider>
   </ReduxProvider>
   , document.getElementById('content'))

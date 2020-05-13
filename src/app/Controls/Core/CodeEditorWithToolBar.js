@@ -22,16 +22,19 @@ const styles = (theme) => ({
   appToolBar: {
     minHeight: '35px',
     paddingLeft: '10px',
-    paddingRight: '10px'
+    paddingRight: '10px',
+    justifyContent: 'space-between'
   },
   codeWindowWrapper: {
     height: '100%',
     width: '100%',
     position: 'relative'
   },
-  title: {
-    flexGrow: 1
+  middle: {
+    flexGrow: 1,
+    flexShrink: 1
   }
+
 })
 
 class CodeEditorWithToolBarPlain extends React.Component {
@@ -43,14 +46,16 @@ class CodeEditorWithToolBarPlain extends React.Component {
       <div className={classes.topBar}>
         <AppBar className={classes.appBar} position="relative">
           <Toolbar variant='dense' className={classes.appToolBar}>
-            <Typography varient='h6' className={classes.title}>
+            <Typography varient='h6'>
               {title}
             </Typography>
-            {_.map(actions, (a, i) => (
-              <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                {a}
-              </IconButton>
-            ))}
+            <div>
+              {_.map(actions, (a, i) => (
+                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                  {a}
+                </IconButton>
+              ))}
+            </div>
           </Toolbar>
         </AppBar>
       </div>

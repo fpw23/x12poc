@@ -2,6 +2,27 @@ import _ from 'lodash'
 import { compose, ah, sh, WithRedux } from 'common-data/datahelper'
 import React from 'react'
 import axios from 'axios'
+import { withSnackbar } from 'notistack'
+
+export const displayRuleMessages = (enqueueSnackbar) => {
+  return (messages) => {
+    if (_.isArray(messages) === false) {
+      enqueueSnackbar('Submit Failed!  Error is not Collection', {
+        variant: 'error'
+      })
+    } else {
+      const ruleMessages = _.filter(messages, { Type: 'Rule' })
+
+      if (ruleMessages.length > 0) {
+        _.each(ruleMessages, (rm) => {
+          enqueueSnackbar(rm.Message, {
+            variant: 'warning'
+          })
+        })
+      }
+    }
+  }
+}
 
 export function WithQuery (options) {
   const outerWrapper = (lopts) => {
@@ -21,7 +42,7 @@ export function WithQuery (options) {
             getQueryProps = _.once(() => {
               const {
                 AppStateSetValue, AppStateClearValue, AppStateAppendArray,
-                AppStateUpdateArray, AppStateClearArray
+                AppStateUpdateArray, AppStateClearArray, enqueueSnackbar
               } = this.props
 
               const ret = {}
@@ -81,27 +102,42 @@ export function WithQuery (options) {
                       if (resp.data.Status !== 'Success') {
                         _.each(resp.data.Messages, (m) => {
                           if (m.Type === 'Info') {
-                            // ShowInfo(m.Message)
+                            enqueueSnackbar(m.Message, {
+                              variant: 'info'
+                            })
                           } else if (m.Type === 'Warning') {
-                            // ShowWarning(m.Message)
+                            enqueueSnackbar(m.Message, {
+                              variant: 'warning'
+                            })
                           } else if (m.Type === 'Rule') {
                             if (m.Field === '_error') {
-                            //   ShowError(m.Message)
+                              enqueueSnackbar(m.Message, {
+                                variant: 'error'
+                              })
                             }
                           } else if (m.Type !== 'Rule') {
-                            // ShowError(m.Message)
+                            enqueueSnackbar(m.Message, {
+                              variant: 'error'
+                            })
                           }
                         })
                         AppStateSetValue(appStateKey, `${a.prop}Loading`, false)
-
                         reject(resp.data.Messages)
                       } else {
                         // process only the info and warning messages if any
                         _.each(resp.data.Messages, (m) => {
                           if (m.Type === 'Info') {
-                            // ShowInfo(m.Message)
+                            enqueueSnackbar(m.Message, {
+                              variant: 'info'
+                            })
                           } else if (m.Type === 'Warning') {
-                            // ShowWarning(m.Message)
+                            enqueueSnackbar(m.Message, {
+                              variant: 'warning'
+                            })
+                          } else if (m.Type === 'Error') {
+                            enqueueSnackbar(m.Message, {
+                              variant: 'error'
+                            })
                           }
                         })
 
@@ -145,9 +181,14 @@ export function WithQuery (options) {
                         // store.dispatch(ClearAccount())
                         // sendToURL(store.dispatch)('/Login')
                         // ShowError('Invalid Authentication Token! Please login again.')
+                        enqueueSnackbar('Invalid Authentication Token! Please login again.', {
+                          variant: 'error'
+                        })
                         reject([{ Type: 'Authentication', Message: 'Invalid Authentication Token! Please login again.' }]) //eslint-disable-line
                       } else {
-                        // ShowError((err || {}).message || 'Unexpected Error :(')
+                        enqueueSnackbar((err || {}).message || 'Unexpected Error :(', {
+                          variant: 'error'
+                        })
                         reject(err)
                       }
                       AppStateSetValue(appStateKey, `${a.prop}Loading`, false)
@@ -161,11 +202,12 @@ export function WithQuery (options) {
             })
 
             render () {
-              const { AppData } = this.props
+              const { AppData, enqueueSnackbar } = this.props
 
               const queryProps = this.getQueryProps()
               const wrapperProps = { ...queryProps }
               wrapperProps[opts.propName] = AppData
+              wrapperProps.displayRuleMessages = displayRuleMessages(enqueueSnackbar)
 
               return (
                 <WrappedComponent {...this.props} {...wrapperProps} />
@@ -179,7 +221,8 @@ export function WithQuery (options) {
           [ah.AppState.SetValue, ah.AppState.ClearValue,
             ah.AppState.AppendArrayValue, ah.AppState.ClearArrayValue,
             ah.AppState.UpdateArrayValue]
-        )
+        ),
+        withSnackbar
       )(internalPlain)
 
       return internal
