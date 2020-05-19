@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { MessageBuilder } from 'common-core/FunctionResult'
 import { NodeVM } from 'vm2'
-import { X12Generator, X12Interchange } from 'node-x12'
+import * as X12 from './node-x12/index'
+import { CustomSegmentHeaders } from './node-x12-segmentHeaders/index'
 
 function AddMessageError (results) {
   return (text, section) => {
@@ -16,11 +17,14 @@ function AddMessageRule (results) {
 }
 
 export class EDIGenerateScriptRunner {
-  constructor (script = '', data = {}) {
+  constructor (script = '', data = {}, messageId = '') {
     this.script = script
     this.data = data
     this.messages = []
     this.result = ''
+
+    const matchHeaders = CustomSegmentHeaders[`H${messageId}`]
+    this.segmentHeaders = matchHeaders || X12.StandardSegmentHeaders || []
   }
 
   process () {
@@ -34,7 +38,7 @@ export class EDIGenerateScriptRunner {
 
     const messages = []
 
-    const interchange = new X12Interchange()
+    const interchange = new X12.X12Interchange()
 
     const vm = new NodeVM({
       sandbox: {
@@ -44,7 +48,10 @@ export class EDIGenerateScriptRunner {
         edi: interchange
       },
       require: {
-        external: ['lodash', 'node-x12', 'moment']
+        external: ['lodash', 'node-x12', 'moment'],
+        mock: {
+          'node-x12': X12
+        }
       }
     })
 
@@ -57,7 +64,9 @@ export class EDIGenerateScriptRunner {
       vm.run(fullScript, __filename)
       this.messages = messages
       // convert interchange to edi string
-      const generator = new X12Generator(interchange.toJSEDINotation())
+      const generator = new X12.X12Generator(interchange.toJSEDINotation(), {
+        segmentHeaders: this.segmentHeaders
+      })
       this.result = generator.toString()
       return true
     } catch (error) {

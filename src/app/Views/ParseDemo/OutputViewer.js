@@ -8,7 +8,7 @@ export class OutputViewer extends React.Component {
       <div>
         { html.indexOf('</') !== -1
           ? (
-            <div dangerouslySetInnerHTML={{ __html: html.replace(/(<? *script)/gi, 'illegalscript') }} >
+            <div style={{ overflow: 'auto' }} dangerouslySetInnerHTML={{ __html: html.replace(/(<? *script)/gi, 'illegalscript') }} >
             </div>
           )
           : html

@@ -71,7 +71,7 @@ export class ParseDemoPlain extends React.Component {
     const { ParseEDI, enqueueSnackbar, displayRuleMessages } = this.props
     const { Data, Template } = this.state
 
-    ParseEDI({ EDI: Data, Script: Template }).then(({ data }) => {
+    ParseEDI({ EDI: Data, Script: Template, MessageId: '271' }).then(({ data }) => {
       try {
         this.setState({
           Output: data
@@ -114,7 +114,7 @@ export class ParseDemoPlain extends React.Component {
           </AppBar>
         </div>
         <div className={classes.body}>
-          <SplitPane split="vertical" onDragFinished={this.onSplitResize.bind(this, 'V')} minSize={'100px'} defaultSize={'50%'}>
+          <SplitPane pane1Style={{ overflow: 'auto' }} split="vertical" onDragFinished={this.onSplitResize.bind(this, 'V')} minSize={'100px'} defaultSize={'50%'}>
             <ReactJson src={Output}/>
             <SplitPane split="horizontal" onDragFinished={this.onSplitResize.bind(this, 'H')} minSize={'100px'} defaultSize={'50%'}>
               <TemplateEditor value={Template} splitSize={VSplit + HSplit} onChange={(val) => { this.setState({ Template: val }) }} />

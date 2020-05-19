@@ -58,7 +58,6 @@
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "moment-timezone": "^0.5.28",
-    "node-x12": "^1.3.6",
     "notistack": "^0.9.11",
     "query-string": "^6.5.0",
     "react": "^16.13.1",

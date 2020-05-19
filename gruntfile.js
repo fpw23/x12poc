@@ -1,6 +1,7 @@
 const path = require('path')
 const serverlintPath = path.resolve(__dirname, './src/server/**/*.js')
 const applintPath = path.resolve(__dirname, './src/core/**/*.js')
+const customNodeX12Path = `!${path.resolve(__dirname, './src/server/Core/ScriptRunners/node-x12/index.js')}`
 // const _ = require('lodash')
 
 module.exports = function (grunt) {
@@ -18,7 +19,7 @@ module.exports = function (grunt) {
       options: {
         format: 'node_modules/eslint-formatter-pretty'
       },
-      target: [serverlintPath, applintPath]
+      target: [serverlintPath, applintPath, customNodeX12Path]
     },
     copy: {
       distcontent: {

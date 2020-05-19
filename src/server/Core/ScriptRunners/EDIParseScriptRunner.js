@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import { MessageBuilder } from 'common-core/FunctionResult'
 import { NodeVM } from 'vm2'
-import { X12Parser, X12QueryEngine } from 'node-x12'
+import * as X12 from './node-x12/index'
+import { CustomSegmentHeaders } from './node-x12-segmentHeaders/index'
 
 const QueryMode = {
   All: 1,
@@ -68,11 +69,14 @@ function EngineQueryFirst (engine, interchange) {
 }
 
 export class EDIParseScriptRunner {
-  constructor (script = '', edi = '') {
+  constructor (script = '', edi = '', messageId = '') {
     this.script = script
     this.edi = edi
     this.messages = []
     this.result = {}
+
+    const matchHeaders = CustomSegmentHeaders[`H${messageId}`]
+    this.segmentHeaders = matchHeaders || X12.StandardSegmentHeaders || []
   }
 
   process () {
@@ -86,9 +90,11 @@ export class EDIParseScriptRunner {
 
     const messages = []
 
-    const parser = new X12Parser(true)
+    const parser = new X12.X12Parser(true, {
+      segmentHeaders: this.segmentHeaders
+    })
     const interchange = parser.parse(this.edi)
-    const engine = new X12QueryEngine()
+    const engine = new X12.X12QueryEngine()
     const data = {}
 
     const vm = new NodeVM({
@@ -103,7 +109,10 @@ export class EDIParseScriptRunner {
         queryFirst: EngineQueryFirst(engine, interchange)
       },
       require: {
-        external: ['lodash', 'node-x12', 'moment']
+        external: ['lodash', 'node-x12', 'moment'],
+        mock: {
+          'node-x12': X12
+        }
       }
     })
 
