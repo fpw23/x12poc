@@ -80,14 +80,14 @@ module.exports = function (grunt) {
     exec: {
       buildDocker: {
         cwd: './docker/web',
-        cmd: `docker build --tag=cradledevs/${pkgInfo.name}:${pkgInfo.version} .`,
+        cmd: `docker build --tag=fpw23/${pkgInfo.name}:${pkgInfo.version} .`,
       },
       tagLatestDocker: {
         cwd: './docker/web',
-        cmd: `docker tag cradledevs/${pkgInfo.name}:${pkgInfo.version} cradledevs/${pkgInfo.name}:latest`,
+        cmd: `docker tag fpw23/${pkgInfo.name}:${pkgInfo.version} fpw23/${pkgInfo.name}:latest`,
       },
       createContainerDocker: {
-        cmd: `docker create -p 8080:3001 --name ${pkgInfo.name}_${pkgInfo.version} cradledevs/${pkgInfo.name}:${pkgInfo.version}`,
+        cmd: `docker create -p 8270:3001 --name ${pkgInfo.name}_${pkgInfo.version} fpw23/${pkgInfo.name}:${pkgInfo.version}`,
       },
       webpackWindows: {
         cwd: './node_modules/.bin',
