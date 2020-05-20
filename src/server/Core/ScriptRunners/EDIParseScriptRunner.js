@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { MessageBuilder } from 'common-core/FunctionResult'
 import { NodeVM } from 'vm2'
 import * as X12 from './node-x12/index'
+import * as CT from './node-x12-codetranslations/index'
 import { CustomSegmentHeaders } from './node-x12-segmentHeaders/index'
 
 const QueryMode = {
@@ -68,6 +69,17 @@ function EngineQueryFirst (engine, interchange) {
   }
 }
 
+function TranslateElementCode (ctList) {
+  return (code, value) => {
+    const fname = `Translate${code}Code`
+    if (_.isFunction(ctList[fname])) {
+      return ctList[fname](value)
+    } else {
+      return value
+    }
+  }
+}
+
 export class EDIParseScriptRunner {
   constructor (script = '', edi = '', messageId = '') {
     this.script = script
@@ -77,6 +89,9 @@ export class EDIParseScriptRunner {
 
     const matchHeaders = CustomSegmentHeaders[`H${messageId}`]
     this.segmentHeaders = matchHeaders || X12.StandardSegmentHeaders || []
+
+    const matchList = CT[`CT${messageId}`]
+    this.ctList = matchList || {}
   }
 
   process () {
@@ -106,7 +121,8 @@ export class EDIParseScriptRunner {
         data: data,
         edi: interchange,
         queryAll: EngineQueryAll(engine, interchange),
-        queryFirst: EngineQueryFirst(engine, interchange)
+        queryFirst: EngineQueryFirst(engine, interchange),
+        translate: TranslateElementCode(this.ctList)
       },
       require: {
         external: ['lodash', 'node-x12', 'moment'],

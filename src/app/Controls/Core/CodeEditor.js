@@ -6,11 +6,11 @@ import { comparePaths } from 'common-tools/index'
 
 import AceEditor from 'react-ace'
 
-import 'ace-builds/src-noconflict/ext-language_tools'
-import 'ace-builds/src-noconflict/mode-json'
-import 'ace-builds/src-noconflict/mode-text'
-import 'ace-builds/src-noconflict/mode-javascript'
-import 'ace-builds/src-noconflict/theme-github'
+import 'ace-builds/src-min-noconflict/ext-language_tools'
+import 'ace-builds/src-min-noconflict/mode-json'
+import 'ace-builds/src-min-noconflict/mode-text'
+import 'ace-builds/src-min-noconflict/mode-javascript'
+import 'ace-builds/src-min-noconflict/theme-github'
 
 export class CodeEditor extends React.Component {
   constructor (props) {

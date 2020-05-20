@@ -1,13 +1,10 @@
 import express from 'express'
-import webpack from 'webpack'
-import webpackMiddleware from 'webpack-dev-middleware'
-import webpackHotMiddleware from 'webpack-hot-middleware'
-import config from '../../configs/webpack.dev.config'
 import path from 'path'
 import bodyParser from 'body-parser'
 import { SetupServiceRoutes } from './Services'
 import { FunctionResult, FunctionResultStatus } from 'common-core/FunctionResult'
 import _ from 'lodash'
+import fs from 'fs'
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -16,23 +13,6 @@ const port = process.env.PORT || 3001
 app.use(bodyParser.json({ limit: '15mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '15mb', extended: true }))
 
-const compiler = webpack(config)
-const middleware = webpackMiddleware(compiler, {
-  publicPath: config.output.publicPath,
-  contentBase: '../app',
-  stats: {
-    colors: true,
-    hash: false,
-    timings: true,
-    chunks: false,
-    chunkModules: false,
-    modules: false
-  }
-})
-
-app.use(middleware)
-app.use(webpackHotMiddleware(compiler))
-
 const contentFolder = path.join(__dirname, '../content')
 console.log(contentFolder)
 app.use('/content', express.static(contentFolder))
@@ -40,10 +20,43 @@ app.use('/content', express.static(contentFolder))
 // install all service routes
 SetupServiceRoutes(app)
 
-app.get('*', function response (req, res) {
-  res.write(middleware.fileSystem.readFileSync(path.join(__dirname, '../app/index.html')))
-  res.end()
-})
+if (process.env.NODE_ENV === 'development') {
+  const webpack = require('webpack')
+  const webpackMiddleware = require('webpack-dev-middleware')
+  const webpackHotMiddleware = require('webpack-hot-middleware')
+  const config = require('../../configs/webpack.dev.config')
+  const compiler = webpack(config)
+  const middleware = webpackMiddleware(compiler, {
+    publicPath: config.output.publicPath,
+    contentBase: '../app',
+    stats: {
+      colors: true,
+      hash: false,
+      timings: true,
+      chunks: false,
+      chunkModules: false,
+      modules: false
+    }
+  })
+
+  app.use(middleware)
+  app.use(webpackHotMiddleware(compiler))
+
+  app.get('*', function response (req, res) {
+    res.write(middleware.fileSystem.readFileSync(path.join(__dirname, '../app/index.html')))
+    res.end()
+  })
+} else {
+  // root app code
+  const rootApp = path.join(__dirname, '../app')
+  app.use(express.static(rootApp))
+  // catch all
+  const catchAllIndex = fs.readFileSync(path.join(__dirname, '../app/index.html'))
+  app.get('*', function response (req, res) {
+    res.write(catchAllIndex)
+    res.end()
+  })
+}
 
 // catch security failures and return error info not text
 app.use((err, req, res, next) => {

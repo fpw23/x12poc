@@ -6,7 +6,10 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import SplitPane from 'react-split-pane'
 import { WithMessageBus, WithQuery } from 'common-tools/index'
-import { OutputViewer } from './OutputViewer'
+import InputLabel from '@material-ui/core/InputLabel'
+import MenuItem from '@material-ui/core/MenuItem'
+import FormControl from '@material-ui/core/FormControl'
+import Select from '@material-ui/core/Select'
 import ReactJson from 'react-json-view'
 import { TemplateEditor, TemplateEditorChannels } from './TemplateEditor'
 import { DataEditor, DataEditorChannels } from './DataEditor'
@@ -39,8 +42,24 @@ const styles = (theme) => ({
   menuButton: {
     marginRight: theme.spacing(2)
   },
+  menuOption: {
+    flex: 1
+  },
+  menuOptionText: {
+    color: theme.palette.primary.contrastText
+  },
+  menuOptionFocused: {},
+  menuOptionOutline: {
+    '&$cssFocused $notchedOutline': {
+      borderColor: `${theme.palette.primary.contrastText} !important`
+    }
+  },
+  notchedOutline: {
+    borderWidth: '1px',
+    borderColor: `${theme.palette.primary.contrastText} !important`
+  },
   title: {
-    flexGrow: 1
+    flex: 4
   }
 })
 
@@ -53,7 +72,8 @@ export class ParseDemoPlain extends React.Component {
       Data: '',
       VSplit: 0,
       HSplit: 0,
-      Output: {}
+      Output: {},
+      MessageId: '270'
     }
   }
 
@@ -69,9 +89,9 @@ export class ParseDemoPlain extends React.Component {
 
   updateOuptputPreview = () => {
     const { ParseEDI, enqueueSnackbar, displayRuleMessages } = this.props
-    const { Data, Template } = this.state
+    const { Data, Template, MessageId } = this.state
 
-    ParseEDI({ EDI: Data, Script: Template, MessageId: '271' }).then(({ data }) => {
+    ParseEDI({ EDI: Data, Script: Template, MessageId: MessageId }).then(({ data }) => {
       try {
         this.setState({
           Output: data
@@ -98,9 +118,15 @@ export class ParseDemoPlain extends React.Component {
     })
   }
 
+  onMessageIdChange = (event) => {
+    this.setState({
+      MessageId: event.target.value
+    })
+  }
+
   render () {
     const { classes } = this.props
-    const { Template, VSplit = 0, HSplit = 0, Data, Output } = this.state
+    const { Template, VSplit = 0, HSplit = 0, Data, Output, MessageId } = this.state
 
     return (
       <div className={classes.root}>
@@ -110,6 +136,27 @@ export class ParseDemoPlain extends React.Component {
               <Typography variant="h6" className={classes.title}>
                 (X12POC) React/Node EDI Parser
               </Typography>
+              <FormControl color='primary' size='small' className={classes.menuOption} variant="outlined" >
+                <InputLabel className={classes.menuOptionText} id="msgId-lab">Message Id</InputLabel>
+                <Select
+                  labelId="msgId-lab"
+                  id="msdId"
+                  label="Message Id"
+                  value={MessageId}
+                  onChange={this.onMessageIdChange}
+                  className={classes.menuOptionText}
+                  InputProps={{
+                    classes: {
+                      root: classes.menuOptionOutline,
+                      notchedOutline: classes.notchedOutline
+                    }
+                  }}
+                >
+                  <MenuItem value='270'>270</MenuItem>
+                  <MenuItem value='271'>271</MenuItem>
+                  <MenuItem value='835'>835</MenuItem>
+                </Select>
+              </FormControl>
             </Toolbar>
           </AppBar>
         </div>
