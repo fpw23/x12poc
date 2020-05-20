@@ -97,7 +97,8 @@ module.exports = function (grunt) {
         }
       },
       webpackLinux: {
-        cmd: './node_modules/.bin/webpack --config ./configs/webpack.prod.config.js',
+        cwd: './node_modules/.bin',
+        cmd: './webpack --config ../../configs/webpack.prod.config.js',
         options: {
           env: 'production'
         }
