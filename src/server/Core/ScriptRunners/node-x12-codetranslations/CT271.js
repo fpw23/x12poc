@@ -309,7 +309,7 @@ export const TranslateEB09Code = (typecode) => {
 }
 
 // Translate EB011 ELIGIBILITY BENEFIT Code
-export const TranslateEB011Code = (typecode) => {
+export const TranslateEB11Code = (typecode) => {
   let returnvalue = typecode
   switch (typecode) {
     case 'N': returnvalue = 'No'; break
@@ -320,7 +320,7 @@ export const TranslateEB011Code = (typecode) => {
 }
 
 // Translate EB012 ELIGIBILITY BENEFIT Code
-export const TranslateEB012Code = (typecode) => {
+export const TranslateEB12Code = (typecode) => {
   let returnvalue = typecode
   switch (typecode) {
     case 'N': returnvalue = 'No'; break
@@ -331,7 +331,7 @@ export const TranslateEB012Code = (typecode) => {
 }
 
 // Translate EB013 ELIGIBILITY BENEFIT Code
-export const TranslateEB013Code = (typecode) => {
+export const TranslateEB13Code = (typecode) => {
   let returnvalue = typecode
   switch (typecode) {
     case 'AD': returnvalue = 'American Dental Association Codes'; break

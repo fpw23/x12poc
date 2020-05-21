@@ -129,7 +129,7 @@ module.exports = function (grunt) {
     grunt.task.run('buildApp')
     grunt.task.run('test')
   })
-  grunt.registerTask('deploy', 'Build docker container for deployment', function () {
+  grunt.registerTask('deploy', 'Build docker image for deployment', function () {
     grunt.task.run('clear')
     grunt.task.run('clear:deployCode')
     grunt.task.run('init')
@@ -139,7 +139,6 @@ module.exports = function (grunt) {
     grunt.task.run('copy:deployCode')
     grunt.task.run('exec:buildDocker')
     grunt.task.run('exec:tagLatestDocker')
-    grunt.task.run('exec:createContainerDocker')
   })
   grunt.registerTask('buildApp', 'Run Webpack in production mode based on platform', function () {
     if (process.platform === 'win32') {

@@ -68,12 +68,12 @@ export class ParseDemoPlain extends React.Component {
     super(props)
 
     this.state = {
-      Template: '',
+      Template: defaultTemplate,
       Data: '',
       VSplit: 0,
       HSplit: 0,
       Output: {},
-      MessageId: '270'
+      MessageId: '271'
     }
   }
 
@@ -195,3 +195,272 @@ export const ParseDemo = compose(
 )(ParseDemoPlain)
 
 export default ParseDemoPlain
+
+const defaultTemplate = `
+
+const ST = this.queryFirst("ST01")
+
+// this.data.loops = this.edi.getSegmentLoops()
+
+if (ST !== '271') {
+    this.AddMessageError(\`Document type is not 271.  ST01 is '\${ST}\`)
+    return
+}
+
+const payerData = this.queryAll("HL+20-NM1:NM101['PR']", 2)
+
+this.data.Payers = _.map(payerData, (p) => {
+    return {
+        Name: p[3],
+        Id: p[9]
+    }    
+})
+
+const providerData = this.queryAll("HL+20+21-NM101", 2)
+
+this.data.Providers = _.map(providerData, (p) => {
+    return {
+        Name: p[3],
+        Id: p[9]
+    }    
+})
+
+const si = _.groupBy(this.queryAll("FORSEGLOOP(ISA.GS.ST=271[1].HL=22[3].NM1=IL[1])=>*", 2), (sd) => sd[0])
+const s = {}
+
+if (si.NM1) {
+    s.Id = si.NM1[0][9]
+    s.FirstName = si.NM1[0][4]
+    s.LastName = si.NM1[0][3]
+    s.MiddleInitial = si.NM1[0][5]
+}
+
+if (si.N3) {
+    _.set(s, 'Address.Street', si.N3[0][1])
+}
+
+if (si.N4) {
+    _.set(s, 'Address.City', si.N4[0][1])
+    _.set(s, 'Address.State', si.N4[0][1])
+    _.set(s, 'Address.ZipCode', si.N4[0][3])
+}
+
+if (si.DMG) {
+    s.Gender = si.DMG[0][3]
+    s.DOB = moment(si.DMG[0][2], 'YYYYMMDD').format('MM/DD/YYYY') 
+}
+
+if (si.INS) {
+    _.set(s, 'Insurance.Relationship', si.INS[0][2])
+    _.set(s, 'Insurance.ChangeTypeCode', si.INS[0][3])
+    _.set(s, 'Insurance.ChangeElement', si.INS[0][4])
+}
+
+if (si.DTP) {
+    _.set(s, 'Insurance.DateTypeCode', si.DTP[0][1])
+    _.set(s, 'Insurance.DateType', this.translate('DTP01', si.DTP[0][1]))
+    if (si.DTP[0][2] === 'D8') {
+        _.set(s, 'Insurance.DateStart', moment(si.DTP[0][3], 'YYYYMMDD').format('MM/DD/YYYY'))
+    } else if (si.DTP[0][2] === 'RD8') {
+        const dateParts = _.split(si.DTP[0][3], '-')
+        if (dateParts.length === 2) {
+            _.set(s, 'Insurance.DateStart', moment(dateParts[0], 'YYYYMMDD').format('MM/DD/YYYY'))
+            _.set(s, 'Insurance.DateEnd', moment(dateParts[1], 'YYYYMMDD').format('MM/DD/YYYY'))
+        } else {
+            _.set(s, 'Insurance.DateError', 'BadDates!')
+        }
+    }
+}
+
+
+this.data.Subscriber = s
+
+const eobs = _.groupBy(
+        this.queryAll(
+            "FORSEGLOOP(^ISA\\\\.GS\\\\.ST=271\\\\[.*\\\\]\\\\.HL=22\\\\[.*\\\\]\\\\.NM1=IL\\\\[.*\\\\]\\\\.EB=.)=>*",
+            4,
+            (s) =>  ({
+                loopPath: s.segment.loopPath,
+                values: _.concat((s.segment || {}).tag, _.map((s.segment || {}).elements, (e) => e.value))
+            })
+        ), 
+        (ebset) => {
+            return _.split(ebset.loopPath, '.')[5]
+        }
+    )
+
+const eobList = []
+const eobsKeys = _.keys(eobs)
+
+_.forEach(eobsKeys, (eobsKey) => {
+    let eob = eobs[eobsKey]
+    let newEOB = {}
+    
+    _.set(newEOB, 'EOBInfoCode', this.translate('EB01', eob[0].values[1]))
+    
+    if (eob[0].values[4]) {
+      _.set(newEOB, 'Insurance', this.translate('EB04', eob[0].values[4]) )  
+    }
+    
+    if (eob[0].values[5]) {
+      _.set(newEOB, 'Plan', this.translate('EB05', eob[0].values[5]) )  
+    }
+    
+    if (eob[0].values[6]) {
+      _.set(newEOB, 'TimePeriod', this.translate('EB06', eob[0].values[6]) )  
+    }
+    
+    if (eob[0].values[7]) {
+      _.set(newEOB, 'Amount', eob[0].values[7])  
+    }
+    
+    if (eob[0].values[8]) {
+      _.set(newEOB, 'Percentage', eob[0].values[8])  
+    }
+    
+    if (eob[0].values[9]) {
+      _.set(newEOB, 'QuantityType', this.translate('EB09', eob[0].values[9]))  
+    }
+    
+    if (eob[0].values[10]) {
+      _.set(newEOB, 'Quantity', this.translate('EB10', eob[0].values[10]))  
+    }
+    
+    if (eob[0].values[3]) {
+        let services = _.split(eob[0].values[3], '^')    
+        _.forEach(services, (service, index) => {
+            if (service) {
+                _.set(newEOB, \`Services[\${index}]\`, this.translate('EB03', service) )  
+            }
+        })
+    }
+    
+    if (eob[0].values[13]) {
+        let procedures = _.split(eob[0].values[13], '^')    
+        _.forEach(procedures, (procedure, index) => {
+            if (procedure) {
+                let details = _.split(procedure, '|')
+                
+                if (details[0]) {
+                    _.set(newEOB, \`Procedures[\${index}].Type\`, details[0] )      
+                }
+                
+                if (details[1]) {
+                    _.set(newEOB, \`Procedures[\${index}].Description\`, this.translate('HCPCS', details[1]) )      
+                }
+            }
+        })
+    }
+    
+    if (eob[0].values[11]) {
+      _.set(newEOB, 'AuthorizationRequired', this.translate('EB11', eob[0].values[11]))  
+    }
+
+    if (eob[0].values[12]) {
+      _.set(newEOB, 'InPlanNetwork', this.translate('EB12', eob[0].values[12]))  
+    }
+    
+    if (eob.length > 1) {
+        let dates = []
+        let schedules = []
+        let refs = []
+        let messages = []
+        let entities = []
+        
+        for (let i = 1; i <= eob.length - 1; i++) {
+            
+            switch (eob[i].values[0]) {
+                case 'DTP':
+                    let newDTP = {
+                        Type: this.translate('DTP01', eob[i].values[1])
+                    }
+                    
+                    if (eob[i].values[2] === 'D8') {
+                        newDTP.Start = moment(eob[i].values[3], 'YYYYMMDD').format('MM/DD/YYYY')
+                    } else if (eob[i].values[2] === 'RD8') {
+                        const dateParts = _.split(eob[i].values[3], '-')
+                        if (dateParts.length === 2) {
+                            newDTP.Start = moment(dateParts[0], 'YYYYMMDD').format('MM/DD/YYYY')
+                            newDTP.End = moment(dateParts[1], 'YYYYMMDD').format('MM/DD/YYYY')
+                        } else {
+                            newDTP.Error = 'BadDates!'
+                        }
+                    }
+                    dates.push(newDTP)
+                    break
+                    
+                case 'HSD':
+                    let newHSD = {
+                        QuantityType: this.translate('HSD01', eob[i].values[1]),
+                        Quantity: eob[i].values[2],
+                        Unit: this.translate('HSD03', eob[i].values[3]),
+                        SampleSize: eob[i].values[4],
+                        PeriodType: this.translate('HSD05', eob[i].values[5]),
+                        Period: eob[i].values[6],
+                        DeliveryFrequency: this.translate('HSD07', eob[i].values[7]),
+                        DeliveryTime: this.translate('HSD08', eob[i].values[8])
+                    }
+                    schedules.push(newHSD)
+                    break
+                    
+                case 'NM1':
+                    let newNM1 = {
+                        Type: this.translate('NM101', eob[i].values[1]),
+                        PersonTypeCode: eob[i].values[2],
+                        PersonType: this.translate('NM102', eob[i].values[2]),
+                        IdType: this.translate('NM108', eob[i].values[8]),
+                        Id: eob[i].values[9],
+                        Period: eob[i].values[6],
+                        DeliveryFrequency: this.translate('HSD07', eob[i].values[7]),
+                        DeliveryTime: this.translate('HSD08', eob[i].values[8])
+                    }
+                    if (eob[i].values[2] === 1) {
+                        newNM1.FName = eob[i].values[3]
+                        newNM1.LName = eob[i].values[4]
+                        newNM1.MName = eob[i].values[5]
+                        newNM1.SName = eob[i].values[7]
+                    } else {
+                        newNM1.Name = eob[i].values[3]
+                    }
+                    entities.push(newNM1)
+                    break
+                    
+                case 'REF':
+                    let newREF = {
+                        Type: this.translate('REF01', eob[i].values[1]),
+                        Id: eob[i].values[2],
+                        Description: eob[i].values[3]
+                    }
+                    refs.push(newREF)
+                    break
+                case 'MSG':
+                    messages.push(eob[i].values[1])
+                    break
+            }
+            
+        }
+        
+        if (dates.length > 0) {
+            newEOB.Dates = dates
+        }
+        if (schedules.length > 0) {
+            newEOB.Schedules = schedules
+        }
+        if (refs.length > 0) {
+            newEOB.References = refs
+        }
+        if (messages.length > 0) {
+            newEOB.Messages = messages
+        }
+        if (entities.length > 0) {
+            newEOB.Entities = entities
+        }
+    }
+    
+    
+
+    eobList.push(newEOB)
+})
+
+this.data.Subscriber.EOBs = eobList
+`

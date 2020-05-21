@@ -8,7 +8,8 @@ import { CustomSegmentHeaders } from './node-x12-segmentHeaders/index'
 const QueryMode = {
   All: 1,
   Segment: 2,
-  Value: 3
+  Value: 3,
+  Custom: 4
 }
 
 function AddMessageError (results) {
@@ -36,12 +37,14 @@ function AddMessageWarning (results) {
 }
 
 function EngineQueryAll (engine, interchange) {
-  return (query, mode = QueryMode.Value) => {
+  return (query, mode = QueryMode.Value, customFunction) => {
     const ret = engine.query(interchange, query)
     if (mode > 1) {
       return _.map(ret, (r) => {
         if (mode === QueryMode.Segment) {
           return _.concat((r.segment || {}).tag, _.map((r.segment || {}).elements, (e) => e.value))
+        } else if (mode === QueryMode.Custom) {
+          return customFunction(r)
         } else {
           return r.values.length > 0 ? r.values : r.value
         }
@@ -53,12 +56,14 @@ function EngineQueryAll (engine, interchange) {
 }
 
 function EngineQueryFirst (engine, interchange) {
-  return (query, mode = QueryMode.Value) => {
+  return (query, mode = QueryMode.Value, customFunction) => {
     const ret = _.first(engine.query(interchange, query))
     if (mode > 1) {
       if (ret) {
         if (mode === QueryMode.Segment) {
           return _.concat((ret.segment || {}).tag, _.map((ret.segment || {}).elements, (e) => e.value))
+        } else if (mode === QueryMode.Custom) {
+          return customFunction(ret)
         } else {
           return ret.values.length > 0 ? ret.values : ret.value
         }
