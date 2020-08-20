@@ -204,6 +204,11 @@ export const TranslateEB03Code = (typecode) => {
     case 'BQ': returnvalue = 'Neurology'; break
     case 'BR': returnvalue = 'Eye'; break
     case 'BS': returnvalue = 'Invasive Procedures'; break
+    case 'BT': returnvalue = 'Gynecological'; break
+    case 'BU': returnvalue = 'Obstetrical'; break
+    case 'BV': returnvalue = 'Obstetrical/Gynecological'; break
+    case 'DM': returnvalue = 'Durable Medical Equipment'; break
+    case 'UC': returnvalue = 'Urgent Care'; break
   }
   return returnvalue
 }

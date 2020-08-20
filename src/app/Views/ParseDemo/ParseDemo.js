@@ -241,7 +241,7 @@ if (si.N3) {
 
 if (si.N4) {
     _.set(s, 'Address.City', si.N4[0][1])
-    _.set(s, 'Address.State', si.N4[0][1])
+    _.set(s, 'Address.State', si.N4[0][2])
     _.set(s, 'Address.ZipCode', si.N4[0][3])
 }
 
