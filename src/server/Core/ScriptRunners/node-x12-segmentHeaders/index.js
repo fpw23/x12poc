@@ -2,6 +2,7 @@ import { StandardSegmentHeaders } from '../node-x12/index'
 import { H_EB } from './H_EB'
 import { H_ST } from './H_ST'
 import { H_NM1 } from './H_NM1'
+import { H_S5 } from './H_S5'
 import _ from 'lodash'
 
 export const CustomSegmentHeaders = {
@@ -16,5 +17,10 @@ export const CustomSegmentHeaders = {
     H_ST,
     H_NM1,
     H_EB
+  ],
+  H204: [
+    ..._.reject(StandardSegmentHeaders, { tag: 'ST' }),
+    H_ST,
+    H_S5
   ]
 }
