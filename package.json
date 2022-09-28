@@ -35,7 +35,7 @@
     "redux-form": "^8.3.8",
     "shortid": "^2.2.16",
     "suber": "^5.0.1",
-    "vm2": "^3.9.9"
+    "vm2": "^3.9.11"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
